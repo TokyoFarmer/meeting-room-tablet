@@ -23,7 +23,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
-import android.content.SharedPreferences;
 
 import com.futurice.android.reservator.R;
 import com.futurice.android.reservator.ReservatorApplication;
@@ -36,8 +35,6 @@ import com.futurice.android.reservator.model.ReservatorException;
 import com.futurice.android.reservator.model.Room;
 import com.futurice.android.reservator.model.TimeSpan;
 
-import org.w3c.dom.Text;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -46,12 +43,8 @@ public class LobbyReservationRowView extends FrameLayout implements
 
     @BindView(R.id.cancelButton)
     ImageButton cancelButton;
-    @BindView(R.id.bookNowButton)
-    Button bookNowButton;
     @BindView(R.id.titleLayout)
     View titleView;
-    @BindView(R.id.reserveButton)
-    Button reserveButton;
     @BindView(R.id.calendarButton)
     Button calendarButton;
     @BindView(R.id.bookingMode)
@@ -72,8 +65,6 @@ public class LobbyReservationRowView extends FrameLayout implements
     ViewSwitcher modeSwitcher;
     @BindView(R.id.roomDefaultIcon)
     ImageView defaultRoomFlag;
-    @BindView(R.id.hintText)
-    TextView hintText;
 
     ReservatorApplication application;
     OnReserveListener onReserveCallback = null;
@@ -82,15 +73,6 @@ public class LobbyReservationRowView extends FrameLayout implements
     private Room room;
     private int animationDuration = 300;
     private ReservatorException reservatorException;
-    private OnFocusChangeListener userNameFocusChangeListener = new OnFocusChangeListener() {
-        @Override
-        public void onFocusChange(View v, boolean hasFocus) {
-            Boolean addressBookOption = PreferenceManager.getInstance(getContext()).getAddressBookEnabled();
-            if (hasFocus && addressBookOption) {
-                reserveButton.setEnabled(false);
-            }
-        }
-    };
 
     public LobbyReservationRowView(Context context) {
         super(context);
@@ -106,15 +88,12 @@ public class LobbyReservationRowView extends FrameLayout implements
         inflate(context, R.layout.lobby_reservation_row, this);
         ButterKnife.bind(this);
         cancelButton.setOnClickListener(this);
-        bookNowButton.setOnClickListener(this);
         titleView.setOnClickListener(this);
-        reserveButton.setOnClickListener(this);
         calendarButton.setOnClickListener(this);
         switchToNormalModeContent();
 
         application = (ReservatorApplication) this.getContext()
                 .getApplicationContext();
-        nameField.setOnFocusChangeListener(userNameFocusChangeListener);
         nameField.setOnItemClickListener(this);
         nameField.setOnClickListener(this);
         if (nameField.getAdapter() == null) {
@@ -167,11 +146,9 @@ public class LobbyReservationRowView extends FrameLayout implements
         if (room.isBookable()) {
             roomStatusView.setTextColor(getResources().getColor(
                     R.color.StatusFreeColor));
-            bookNowButton.setVisibility(View.VISIBLE);
         } else {
             roomStatusView.setTextColor(getResources().getColor(
                     R.color.StatusReservedColor));
-            bookNowButton.setVisibility(View.INVISIBLE);
         }
 
         if (application.getFavouriteRoomName().equals(room.getName())) {
@@ -185,25 +162,13 @@ public class LobbyReservationRowView extends FrameLayout implements
 
     @Override
     public void onClick(View v) {
-
-        if (v == bookNowButton) {
-            setReserveMode();
-        } else if (v == cancelButton) {
-            setNormalMode();
-            if (this.onCancellListener != null) {
-                this.onCancellListener.onCancel(this);
-            }
-        } else if (v == reserveButton) {
-            reserveButton.setEnabled(false);
-            new MakeReservationTask().execute();
-        } else if (v == calendarButton || v == titleView) {
+        if (v == calendarButton || v == titleView) {
             RoomActivity.startWith(getContext(), getRoom());
         }
     }
 
     @Override
     public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-        reserveButton.setEnabled(true);
         nameField.setSelected(false);
         InputMethodManager imm = (InputMethodManager) getContext()
                 .getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -257,7 +222,6 @@ public class LobbyReservationRowView extends FrameLayout implements
         if (modeSwitcher.indexOfChild(bookingMode) >= 0) {
             modeSwitcher.removeView(bookingMode);
         }
-        reserveButton.setEnabled(false);
         setBackgroundColor(getResources().getColor(R.color.Transparent));
     }
 
@@ -295,14 +259,6 @@ public class LobbyReservationRowView extends FrameLayout implements
         modeSwitcher.setDisplayedChild(modeSwitcher.indexOfChild(bookingMode));
         setBackgroundColor(getResources().getColor(R.color.ReserveBackground));
 
-        // Initial state for the "Reserve" button.
-        if (PreferenceManager.getInstance(getContext()).getAddressBookEnabled()) {
-            reserveButton.setEnabled(false);
-            hintText.setVisibility(View.GONE);
-        } else {
-            reserveButton.setEnabled(true);
-            hintText.setVisibility(View.VISIBLE);
-        }
 
     }
 

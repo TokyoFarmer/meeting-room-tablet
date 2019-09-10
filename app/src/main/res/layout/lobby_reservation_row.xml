@@ -7,40 +7,42 @@
     android:gravity="center_vertical">
 
     <LinearLayout
-        android:layout_width="170dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginEnd="20dp"
-        android:layout_marginLeft="100dp"
-        android:layout_marginRight="20dp"
         android:layout_marginStart="100dp"
+        android:layout_marginLeft="100dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginRight="20dp"
         android:orientation="horizontal">
 
         <ImageView
-            android:layout_gravity="center_horizontal|top"
             android:id="@+id/roomDefaultIcon"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal|top"
             android:layout_marginEnd="4dp"
             android:layout_marginRight="4dp"
-            android:src="@android:drawable/ic_notification_overlay"
-            android:contentDescription="@string/default_room_icon_content_description" />
+            android:contentDescription="@string/default_room_icon_content_description"
+            android:src="@android:drawable/ic_notification_overlay" />
 
 
         <LinearLayout
             android:id="@+id/titleLayout"
-            android:layout_width="wrap_content"
+            android:layout_width="370dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical|start"
-            android:layout_marginLeft="10dp"
             android:layout_marginStart="10dp"
+            android:layout_marginLeft="10dp"
             android:orientation="vertical">
 
             <TextView
                 android:id="@+id/roomNameLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/TextColor"
+                android:fontFamily="sans-serif"
+                android:textColor="#000"
+                android:textSize="24sp"
                 android:textStyle="bold"
                 tools:text="Room name XXX" />
 
@@ -55,7 +57,7 @@
 
     <ViewSwitcher
         android:id="@+id/modeSwitcher"
-        android:layout_width="match_parent"
+        android:layout_width="235dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:inAnimation="@animator/fadein"
@@ -66,34 +68,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp"
             android:layout_marginEnd="0dp"
             android:layout_marginRight="0dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
             android:orientation="horizontal"
             android:visibility="visible"
-            android:weightSum="9" >
-
-            <Button
-                android:id="@+id/bookNowButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_weight="3"
-                android:background="@drawable/button_background"
-                android:focusable="true"
-                android:text="@string/book_now"
-                android:textColor="@android:color/white" />
+            android:weightSum="9">
 
             <TextView
                 android:id="@+id/roomStatusLabel"
-                android:layout_width="0dp"
+                android:layout_width="183dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_marginLeft="20dp"
                 android:layout_marginStart="20dp"
+                android:layout_marginLeft="20dp"
                 android:layout_weight="5"
                 android:minWidth="100dp"
+                android:textSize="24sp"
                 tools:text="&lt;status&gt;" />
 
             <Button
@@ -102,7 +94,8 @@
                 android:layout_height="24dp"
                 android:layout_gravity="center_vertical|start"
                 android:background="@drawable/calendar_small_grey"
-                android:focusable="true" />
+                android:focusable="true"
+                android:textSize="24sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -119,9 +112,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|end"
+                android:layout_marginTop="10dp"
                 android:layout_marginEnd="10dp"
                 android:layout_marginRight="10dp"
-                android:layout_marginTop="10dp"
                 android:background="@drawable/close_button_states"
                 android:contentDescription="@string/cancel_reservation" />
 
@@ -137,10 +130,10 @@
                 android:layout_width="230dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginBottom="10dp"
                 android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
                 android:layout_marginTop="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginBottom="10dp"
                 android:completionHint="Your name"
                 android:completionThreshold="2"
                 android:hint="@string/hint_your_name"
@@ -149,27 +142,7 @@
                 android:lines="1"
                 android:maxLines="1"
                 android:textColor="@color/button_color"
-                android:textColorHint="@color/CalendarWeekTextColor"/>
-
-            <TextView
-                android:layout_gravity="center"
-                android:id="@+id/hintText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/hintText"
-                android:textColor="@color/CalendarWeekTextColor"/>
-
-            <Button
-                android:id="@+id/reserveButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginBottom="10dp"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/button_background"
-                android:focusable="true"
-                android:text="@string/button_reserve"
-                android:textColor="@android:color/white" />
+                android:textColorHint="@color/CalendarWeekTextColor" />
 
 
         </LinearLayout>

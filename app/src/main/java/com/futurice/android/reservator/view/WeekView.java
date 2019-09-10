@@ -21,9 +21,9 @@ import butterknife.BindView;
 
 public class WeekView extends RelativeLayout implements OnClickListener {
 
-    public static final int NUMBER_OF_DAYS_TO_SHOW = 10;
+    public static final int NUMBER_OF_DAYS_TO_SHOW = 5;
     public static final int DAY_START_TIME = 60 * 8; // minutes from midnight
-    public static final int DAY_END_TIME = 60 * 20;
+    public static final int DAY_END_TIME = 60 * 21;
     public static final int NORMALIZATION_START_HOUR = 20;
 
     private OnFreeTimeClickListener onFreeTimeClickListener = null;
@@ -85,34 +85,34 @@ public class WeekView extends RelativeLayout implements OnClickListener {
         cv.setOnClickListener(this);
     }
 
+
+    // Disabling these two features, because we will not be using the reserve functionality
     public void setOnFreeTimeClickListener(OnFreeTimeClickListener onFreeTimeClickListener) {
-        this.onFreeTimeClickListener = onFreeTimeClickListener;
+        this.onFreeTimeClickListener = null;
     }
-
     public void setOnReservationClickListener(OnReservationClickListener onReservationClickListener) {
-        this.onReservationClickListener = onReservationClickListener;
+        this.onReservationClickListener = null;
     }
-
     @Override
     public void onClick(final View v) {
 
-        if (v instanceof ReservatorVisualizer) {
-            ReservatorVisualizer visualizer = (ReservatorVisualizer) v;
-
-            final Reservation clickedReservation = visualizer.getSelectedReservation();
-            if (clickedReservation != null) {
-                // User clicked a reservation
-                if (onReservationClickListener != null) {
-                    onReservationClickListener.onReservationClick(v, clickedReservation);
-                }
-            } else {
-                // User clicked a free time slot
-                if (onFreeTimeClickListener != null) {
-                    onFreeTimeClickListener.onFreeTimeClick(v,
-                        visualizer.getSelectedTimeSpan(), visualizer.getSelectedTime());
-                }
-            }
-        }
+//        if (v instanceof ReservatorVisualizer) {
+//            ReservatorVisualizer visualizer = (ReservatorVisualizer) v;
+//
+//            final Reservation clickedReservation = visualizer.getSelectedReservation();
+//            if (clickedReservation != null) {
+//                // User clicked a reservation
+//                if (onReservationClickListener != null) {
+//                    onReservationClickListener.onReservationClick(v, clickedReservation);
+//                }
+//            } else {
+//                // User clicked a free time slot
+//                if (onFreeTimeClickListener != null) {
+//                    onFreeTimeClickListener.onFreeTimeClick(v,
+//                        visualizer.getSelectedTimeSpan(), visualizer.getSelectedTime());
+//                }
+//            }
+//        }
     }
 
     public interface OnFreeTimeClickListener {

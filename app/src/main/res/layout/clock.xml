@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<DigitalClock xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content" android:layout_height="wrap_content"
+<TextClock xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentStart="true"
     android:layout_alignParentTop="true"
-    android:layout_alignParentEnd="true"
-    android:layout_alignParentRight="true"
+    android:format24Hour="true"
     android:textColor="@color/TrafficLightText"
     android:textSize="40sp"
     android:textStyle="bold">
 
-</DigitalClock>
+</TextClock>
