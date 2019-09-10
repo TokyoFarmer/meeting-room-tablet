@@ -45,8 +45,8 @@ public class CalendarVisualizer extends HorizontalScrollView implements Reservat
     private int dayStartTime; // minutes from midnight
     private int dayEndTime;
     private DateTime firstDayToShow;
-    private int daysToShow = 10;
-    private int dayWidth = 250;
+    private int daysToShow = 5;
+    private int dayWidth = 230;
     private int timeLabelWidth = 100;
     private Reservation[] reservations;
     private SimpleDateFormat dayLabelFormatter, weekLabelFormatter;
