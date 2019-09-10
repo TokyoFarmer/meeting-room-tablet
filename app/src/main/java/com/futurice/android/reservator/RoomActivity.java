@@ -55,7 +55,6 @@ public class RoomActivity extends ReservatorActivity implements OnMenuItemClickL
             startAutoRefreshData();
         }
     };
-    final int DEFAULT_BOOK_NOW_DURATION = 30; // mins
     DataProxy proxy;
     Room currentRoom;
 
@@ -200,44 +199,6 @@ public class RoomActivity extends ReservatorActivity implements OnMenuItemClickL
             }
         });
 
-        trafficLights.setBookNowListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!currentRoom.isFree()) return;
-                TimeSpan limits = currentRoom.getNextFreeTime();
-
-                DateTime now = new DateTime();
-                TimeSpan suggested = new TimeSpan(now, now.add(Calendar.MINUTE, DEFAULT_BOOK_NOW_DURATION));
-
-                if (limits == null) {
-                    // No next free time was found. Use the suggested time.
-                    limits = suggested;
-                } else if (limits.getEnd().before(suggested.getEnd())) {
-                    // The next free time ends before the suggested time.
-                    suggested = limits;
-                }
-
-                final RoomReservationPopup d = new RoomReservationPopup(RoomActivity.this, limits, suggested, currentRoom);
-                d.setOnReserveCallback(new LobbyReservationRowView.OnReserveListener() {
-                    @Override
-                    public void call(LobbyReservationRowView v) {
-                        d.dismiss();
-                        refreshData();
-                    }
-                });
-
-                RoomActivity.this.trafficLights.disable();
-                d.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        RoomActivity.this.trafficLights.enable();
-                    }
-                });
-
-                d.show();
-            }
-        });
-
         weekView.setOnReservationClickListener(new WeekView.OnReservationClickListener() {
             @Override
             public void onReservationClick(View v, Reservation reservation) {
@@ -267,18 +228,19 @@ public class RoomActivity extends ReservatorActivity implements OnMenuItemClickL
     public boolean onCreateOptionsMenu(Menu menu) {
         refreshMenu = menu.add("Refresh").setOnMenuItemClickListener(this);
         refreshMenu.setIcon(android.R.drawable.ic_popup_sync);
-        settingsMenu = menu.add("Settings").setOnMenuItemClickListener(this);
-        settingsMenu.setIcon(android.R.drawable.ic_menu_preferences);
+//        settingsMenu = menu.add("Settings").setOnMenuItemClickListener(this);
+//        settingsMenu.setIcon(android.R.drawable.ic_menu_preferences);
         aboutMenu = menu.add("About").setOnMenuItemClickListener(this);
         return true;
     }
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
-        if (item == settingsMenu) {
-            Intent i = new Intent(this, SettingsActivity.class);
-            startActivity(i);
-        } else if (item == refreshMenu) {
+//        if (item == settingsMenu) {
+//            Intent i = new Intent(this, SettingsActivity.class);
+//            startActivity(i);
+//        } else
+        if (item == refreshMenu) {
             refreshData();
         } else if (item == aboutMenu) {
             SpannableString s = new SpannableString(getString(R.string.aboutInfo));
