@@ -186,18 +186,19 @@ public class LobbyActivity extends ReservatorActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         refreshMenu = menu.add("Refresh").setOnMenuItemClickListener(this);
         refreshMenu.setIcon(android.R.drawable.ic_popup_sync);
-        settingsMenu = menu.add("Settings").setOnMenuItemClickListener(this);
-        settingsMenu.setIcon(android.R.drawable.ic_menu_preferences);
+//        settingsMenu = menu.add("Settings").setOnMenuItemClickListener(this);
+//        settingsMenu.setIcon(android.R.drawable.ic_menu_preferences);
         aboutMenu = menu.add("About").setOnMenuItemClickListener(this);
         return true;
     }
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
-        if (item == settingsMenu) {
-            Intent i = new Intent(this, SettingsActivity.class);
-            startActivity(i);
-        } else if (item == refreshMenu) {
+//        if (item == settingsMenu) {
+//            Intent i = new Intent(this, SettingsActivity.class);
+//            startActivity(i);
+//        } else
+        if (item == refreshMenu) {
             refreshRoomInfo();
             refetchAddressBook();
         } else if (item == aboutMenu) {
