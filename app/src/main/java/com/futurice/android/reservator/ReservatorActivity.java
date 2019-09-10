@@ -26,6 +26,7 @@ public class ReservatorActivity extends Activity {
     BatteryStateReceiver batteryStateReceiver = new BatteryStateReceiver();
     IntentFilter filter = new IntentFilter();
 
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         filter.addAction(Intent.ACTION_POWER_CONNECTED);
@@ -84,7 +85,7 @@ public class ReservatorActivity extends Activity {
 
     private void startAutoGoToFavouriteRoom() {
         if (isPrehensible()) {
-            handler.postDelayed(goToFavouriteRoomRunable, 60000);
+            handler.postDelayed(goToFavouriteRoomRunable, 20000);
         }
     }
 
@@ -102,6 +103,7 @@ public class ReservatorActivity extends Activity {
     class GoToFavouriteRoom implements Runnable {
 
         ReservatorActivity activity;
+        Room defaultRoom;
 
         public GoToFavouriteRoom(ReservatorActivity anAct) {
             activity = anAct;
@@ -120,7 +122,8 @@ public class ReservatorActivity extends Activity {
                     err.show();
                     return;
                 }
-                RoomActivity.startWith(activity, room);
+                if (defaultRoom == null) defaultRoom = room;
+                RoomActivity.startWith(activity, defaultRoom);
             }
             activity.onPrehended();
         }
@@ -143,5 +146,9 @@ public class ReservatorActivity extends Activity {
         public boolean isCharging() {
             return (status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL);
         }
+    }
+
+    public ReservatorActivity getReservatorActivity() {
+        return this;
     }
 }
