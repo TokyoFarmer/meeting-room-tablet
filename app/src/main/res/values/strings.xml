@@ -16,6 +16,7 @@
     <string name="used_google_account">Used Google Account</string>
     <string name="shown_rooms">Visible rooms</string>
     <string name="reservationCancelInfo">You can cancel reservations that were originally made from a room tablet</string>
+    <string name="bookNow">Book Now</string>
     <string name="disconnectedWarning">Disconnected!</string>
     <string name="aboutInfo">H4 Meeting room is a fork of the Reservator application.\n\nYou can find the source code at https://github.com/TokyoFarmer/meeting-room-tablet.\n\nThis application is published under the BSD license. You can find the source code for the Reservator application at: http://github.com/futurice/meeting-room-tablet</string>
     <string name="aboutTitle">About</string>
@@ -37,6 +38,10 @@
     <string name="room_name">Room Name</string>
     <string name="cancel_reservation">Cancel reservation</string>
     <string name="hint_your_name">Your name</string>
+    <string name="hint_organizer_name">Organizer name</string>
+    <string name="hint_event_title">Event title</string>
+    <string name="hint_attendees">Attendees separated by (,)</string>
+    <string name="button_reserve">Reserve</string>
     <string name="message_permissions_are_required">Reservator Needs Permissions to Work!</string>
     <string name="room_capacity">for %1$d</string>
     <string name="end_plus_content_description">plus time</string>

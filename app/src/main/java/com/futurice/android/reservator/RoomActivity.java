@@ -37,6 +37,7 @@ import com.futurice.android.reservator.view.RoomReservationPopup;
 import com.futurice.android.reservator.view.RoomTrafficLights;
 import com.futurice.android.reservator.view.WeekView;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Vector;
 
 import butterknife.BindView;
@@ -47,14 +48,12 @@ public class RoomActivity extends ReservatorActivity implements OnMenuItemClickL
     public static final String ROOM_EXTRA = "room";
     public static final long ROOMLIST_REFRESH_PERIOD = 60 * 1000;
     final Handler handler = new Handler();
-    final Runnable refreshDataRunnable = new Runnable() {
-        @Override
-        public void run() {
-            Log.v("Refresh", "refreshing room info");
-            refreshData();
-            startAutoRefreshData();
-        }
+    final Runnable refreshDataRunnable = () -> {
+        Log.v("Refresh", "refreshing room info");
+        refreshData();
+        startAutoRefreshData();
     };
+    final int DEFAULT_BOOK_NOW_DURATION = 30; // mins
     DataProxy proxy;
     Room currentRoom;
 
@@ -137,90 +136,119 @@ public class RoomActivity extends ReservatorActivity implements OnMenuItemClickL
         }
 
         seeAllRoomsButton.setOnClickListener(
-            new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    RoomActivity.this.finish();
+            (v) -> RoomActivity.this.finish()
+        );
+
+        weekView.setOnFreeTimeClickListener((View v, TimeSpan timeSpan, DateTime touch) -> {
+            TimeSpan reservationTimeSpan = timeSpan;
+
+            // if time span is greater than hour do stuff
+            if (timeSpan.getLength() > 60 * 60000) {
+                DateTime start = timeSpan.getStart();
+                DateTime end = timeSpan.getEnd();
+
+                DateTime now = new DateTime();
+
+                touch = touch.stripMinutes();
+
+                if (touch.before(start)) {
+                    touch = start;
                 }
+                if (touch.before(now) && now.before(end)) {
+                    touch = now;
+                }
+
+                reservationTimeSpan = new TimeSpan(touch, Calendar.HOUR, 1);
+                DateTime touchend = reservationTimeSpan.getEnd();
+
+                // quantize end to 15min steps
+                touchend = touchend.set(Calendar.MINUTE, (touchend.get(Calendar.MINUTE) / 15) * 15);
+
+                if (touchend.after(end)) {
+                    reservationTimeSpan.setEnd(end);
+                }
+            }
+
+            final RoomReservationPopup d = new RoomReservationPopup(
+                    RoomActivity.this,
+                    timeSpan,
+                    reservationTimeSpan,
+                    currentRoom
+            );
+
+            d.setOnReserveCallback((LobbyReservationRowView view) -> {
+                d.dismiss();
+                refreshData();
             });
 
-        weekView.setOnFreeTimeClickListener(new WeekView.OnFreeTimeClickListener() {
-            @Override
-            public void onFreeTimeClick(View v, TimeSpan timeSpan, DateTime touch) {
+            RoomActivity.this.trafficLights.disable();
+            d.setOnDismissListener(
+                    (DialogInterface dialog) -> RoomActivity.this.trafficLights.enable()
+            );
 
-                TimeSpan reservationTimeSpan = timeSpan;
-
-                // if time span is greater than hour do stuff
-                if (timeSpan.getLength() > 60 * 60000) {
-                    DateTime start = timeSpan.getStart();
-                    DateTime end = timeSpan.getEnd();
-
-                    DateTime now = new DateTime();
-
-                    touch = touch.stripMinutes();
-
-                    if (touch.before(start)) {
-                        touch = start;
-                    }
-                    if (touch.before(now) && now.before(end)) {
-                        touch = now;
-                    }
-
-                    reservationTimeSpan = new TimeSpan(touch, Calendar.HOUR, 1);
-                    DateTime touchend = reservationTimeSpan.getEnd();
-
-                    // quantize end to 15min steps
-                    touchend = touchend.set(Calendar.MINUTE, (touchend.get(Calendar.MINUTE) / 15) * 15);
-
-                    if (touchend.after(end)) {
-                        reservationTimeSpan.setEnd(end);
-                    }
-                }
-
-                final RoomReservationPopup
-                    d = new RoomReservationPopup(RoomActivity.this, timeSpan, reservationTimeSpan, currentRoom);
-                d.setOnReserveCallback(new LobbyReservationRowView.OnReserveListener() {
-                    @Override
-                    public void call(LobbyReservationRowView v) {
-                        d.dismiss();
-                        refreshData();
-                    }
-                });
-
-                RoomActivity.this.trafficLights.disable();
-                d.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        RoomActivity.this.trafficLights.enable();
-                    }
-                });
-
-                d.show();
-            }
+            d.show();
         });
 
-        weekView.setOnReservationClickListener(new WeekView.OnReservationClickListener() {
-            @Override
-            public void onReservationClick(View v, Reservation reservation) {
-                final EditReservationPopup
-                    d = new EditReservationPopup(RoomActivity.this, reservation, currentRoom,
-                    new EditReservationPopup.OnReservationCancelledListener() {
-                        @Override
-                        public void onReservationCancelled(Reservation r) {
-                            refreshData();
-                        }
-                    });
+        weekView.setOnReservationClickListener((View v, Reservation reservation) -> {
+            final EditReservationPopup d = new EditReservationPopup(
+                    RoomActivity.this,
+                    reservation,
+                    currentRoom,
+                    (Reservation r) -> refreshData()
+            );
 
-                RoomActivity.this.trafficLights.disable();
-                d.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        RoomActivity.this.trafficLights.enable();
-                    }
-                });
+            RoomActivity.this.trafficLights.disable();
 
-                d.show();
+            d.setOnDismissListener(
+                    (DialogInterface dialog) -> RoomActivity.this.trafficLights.enable()
+            );
+
+            d.show();
+        });
+
+        trafficLights.setBookNowListener((View v) -> {
+            if (!currentRoom.isFree()) return;
+
+            DateTime now = new DateTime();
+            TimeSpan suggested = new TimeSpan(now, now.add(Calendar.MINUTE, DEFAULT_BOOK_NOW_DURATION));
+            TimeSpan limits = currentRoom.getNextFreeSlot(180);
+
+            if (limits == null) {
+                // No next free time was found. Use the suggested time.
+                limits = suggested;
+            } else if (limits.getEnd().before(suggested.getEnd())) {
+                // The next free time ends before the suggested time.
+                suggested = limits;
             }
+
+            final RoomReservationPopup d = new RoomReservationPopup(RoomActivity.this, limits, suggested, currentRoom);
+            d.setOnReserveCallback((LobbyReservationRowView view) -> {
+                d.dismiss();
+                refreshData();
+            });
+
+            RoomActivity.this.trafficLights.disable();
+            d.setOnDismissListener(
+                    (DialogInterface dialog) -> RoomActivity.this.trafficLights.enable()
+            );
+
+            d.show();
+        });
+
+        weekView.setOnReservationClickListener((View v, Reservation reservation) -> {
+            final EditReservationPopup d = new EditReservationPopup(
+                    RoomActivity.this,
+                    reservation,
+                    currentRoom,
+                    (Reservation r) -> refreshData()
+            );
+
+            RoomActivity.this.trafficLights.disable();
+            d.setOnDismissListener(
+                    (DialogInterface dialog) -> RoomActivity.this.trafficLights.enable()
+            );
+
+            d.show();
         });
     }
 
@@ -228,18 +256,18 @@ public class RoomActivity extends ReservatorActivity implements OnMenuItemClickL
     public boolean onCreateOptionsMenu(Menu menu) {
         refreshMenu = menu.add("Refresh").setOnMenuItemClickListener(this);
         refreshMenu.setIcon(android.R.drawable.ic_popup_sync);
-//        settingsMenu = menu.add("Settings").setOnMenuItemClickListener(this);
-//        settingsMenu.setIcon(android.R.drawable.ic_menu_preferences);
+        settingsMenu = menu.add("Settings").setOnMenuItemClickListener(this);
+        settingsMenu.setIcon(android.R.drawable.ic_menu_preferences);
         aboutMenu = menu.add("About").setOnMenuItemClickListener(this);
         return true;
     }
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
-//        if (item == settingsMenu) {
-//            Intent i = new Intent(this, SettingsActivity.class);
-//            startActivity(i);
-//        } else
+        if (item == settingsMenu) {
+            Intent i = new Intent(this, SettingsActivity.class);
+            startActivity(i);
+        } else
         if (item == refreshMenu) {
             refreshData();
         } else if (item == aboutMenu) {

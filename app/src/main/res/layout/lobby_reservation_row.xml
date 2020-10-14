@@ -57,7 +57,7 @@
 
     <ViewSwitcher
         android:id="@+id/modeSwitcher"
-        android:layout_width="235dp"
+        android:layout_width="448dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:inAnimation="@animator/fadein"
@@ -125,8 +125,8 @@
                 android:layout_gravity="center"
                 android:layout_marginBottom="16dp" />
 
-            <AutoCompleteTextView
-                android:id="@+id/autoCompleteTextView1"
+            <EditText
+                android:id="@+id/eventTitle"
                 android:layout_width="230dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -134,15 +134,53 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginRight="10dp"
                 android:layout_marginBottom="10dp"
-                android:completionHint="Your name"
+                android:completionHint="Event title"
                 android:completionThreshold="2"
-                android:hint="@string/hint_your_name"
+                android:hint="@string/hint_event_title"
+                android:lines="1"
+                android:maxLines="1"
+                android:inputType="textCapWords|textFilter"
+                android:textColor="@color/button_color"
+                android:textColorHint="@color/CalendarWeekTextColor" />
+
+            <MultiAutoCompleteTextView
+                android:id="@+id/eventAttendees"
+                android:layout_width="230dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginBottom="10dp"
+                android:completionHint="Attendees separated by (,)"
+                android:completionThreshold="2"
+                android:hint="@string/hint_attendees"
                 android:imeOptions="actionDone"
                 android:inputType="textCapWords|textFilter"
                 android:lines="1"
-                android:maxLines="1"
+                android:maxLines="3"
                 android:textColor="@color/button_color"
                 android:textColorHint="@color/CalendarWeekTextColor" />
+
+            <TextView
+                android:id="@+id/hintText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/hintText"
+                android:textColor="@color/CalendarWeekTextColor" />
+
+            <Button
+                android:id="@+id/reserveButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/button_background"
+                android:focusable="true"
+                android:text="@string/button_reserve"
+                android:textColor="@android:color/white" />
 
 
         </LinearLayout>

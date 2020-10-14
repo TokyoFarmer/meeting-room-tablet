@@ -20,8 +20,7 @@ public class LoginActivity extends ReservatorActivity
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
-    if (!PreferenceManager.getInstance(this)
-        .getApplicationConfigured()) {
+    if (!PreferenceManager.getInstance(this).getApplicationConfigured()) {
       showWizard();
       return;
     }

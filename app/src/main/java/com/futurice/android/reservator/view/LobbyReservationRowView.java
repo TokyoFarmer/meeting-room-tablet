@@ -21,6 +21,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.MultiAutoCompleteTextView;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
@@ -35,14 +36,26 @@ import com.futurice.android.reservator.model.ReservatorException;
 import com.futurice.android.reservator.model.Room;
 import com.futurice.android.reservator.model.TimeSpan;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
+import static java.util.stream.Collectors.toList;
 
 public class LobbyReservationRowView extends FrameLayout implements
         OnClickListener, OnItemClickListener {
 
     @BindView(R.id.cancelButton)
     ImageButton cancelButton;
+    @BindView(R.id.reserveButton)
+    Button reserveButton;
+    @BindView(R.id.hintText)
+    TextView hintText;
     @BindView(R.id.titleLayout)
     View titleView;
     @BindView(R.id.calendarButton)
@@ -51,8 +64,10 @@ public class LobbyReservationRowView extends FrameLayout implements
     View bookingMode;
     @BindView(R.id.normalMode)
     View normalMode;
-    @BindView(R.id.autoCompleteTextView1)
-    AutoCompleteTextView nameField;
+    @BindView(R.id.eventAttendees)
+    MultiAutoCompleteTextView attendeesField;
+    @BindView(R.id.eventTitle)
+    TextView eventTitle;
     @BindView(R.id.timeSpanPicker2)
     CustomTimeSpanPicker2 timePicker2;
     @BindView(R.id.roomNameLabel)
@@ -68,11 +83,17 @@ public class LobbyReservationRowView extends FrameLayout implements
 
     ReservatorApplication application;
     OnReserveListener onReserveCallback = null;
-    OnCancellListener onCancellListener = null;
+    OnCancelListener OnCancelListener = null;
 
     private Room room;
     private int animationDuration = 300;
     private ReservatorException reservatorException;
+
+    private OnFocusChangeListener userNameFocusChangeListener = (View v, boolean hasFocus) -> {
+      Boolean addressBookOption = PreferenceManager.getInstance(getContext()).getAddressBookEnabled();
+      if(hasFocus && addressBookOption)
+          reserveButton.setEnabled(false);
+    };
 
     public LobbyReservationRowView(Context context) {
         super(context);
@@ -89,21 +110,27 @@ public class LobbyReservationRowView extends FrameLayout implements
         ButterKnife.bind(this);
         cancelButton.setOnClickListener(this);
         titleView.setOnClickListener(this);
+        reserveButton.setOnClickListener(this);
         calendarButton.setOnClickListener(this);
         switchToNormalModeContent();
 
         application = (ReservatorApplication) this.getContext()
                 .getApplicationContext();
-        nameField.setOnItemClickListener(this);
-        nameField.setOnClickListener(this);
-        if (nameField.getAdapter() == null) {
+
+        eventTitle.setOnClickListener(this);
+
+        attendeesField.setOnFocusChangeListener(userNameFocusChangeListener);
+        attendeesField.setOnItemClickListener(this);
+        attendeesField.setOnClickListener(this);
+        if(attendeesField.getAdapter() == null) {
             try {
-                nameField.setAdapter(new AddressBookAdapter(this.getContext(),
+                attendeesField.setAdapter(new AddressBookAdapter(this.getContext(),
                         application.getAddressBook()));
-            } catch (ReservatorException e) {
-                reservatorException = e;
+            } catch (ReservatorException ex) {
+                reservatorException = ex;
             }
         }
+        attendeesField.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
     }
 
     public void setAnimationDuration(int millis) {
@@ -164,26 +191,33 @@ public class LobbyReservationRowView extends FrameLayout implements
     public void onClick(View v) {
         if (v == calendarButton || v == titleView) {
             RoomActivity.startWith(getContext(), getRoom());
+        } else if (v == cancelButton) {
+            setNormalMode();
+            if (this.OnCancelListener != null) {
+                this.OnCancelListener.onCancel(this);
+            }
+        } else if (v == reserveButton) {
+            reserveButton.setEnabled(false);
+            new MakeReservationTask().execute();
         }
     }
 
     @Override
     public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-        nameField.setSelected(false);
+        reserveButton.setEnabled(true);
+        attendeesField.setSelected(false);
         InputMethodManager imm = (InputMethodManager) getContext()
                 .getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(nameField.getRootView().getWindowToken(), 0);
+        imm.hideSoftInputFromWindow(attendeesField.getRootView().getWindowToken(), 0);
     }
 
     private void reservatorError(ReservatorException e) {
         Builder alertBuilder = new AlertDialog.Builder(getContext());
         alertBuilder.setTitle("Failed to put reservation").setMessage(
                 e.getMessage());
-        alertBuilder.setOnCancelListener(new OnCancelListener() {
-            public void onCancel(DialogInterface dialog) {
-                if (onReserveCallback != null) {
-                    onReserveCallback.call(LobbyReservationRowView.this);
-                }
+        alertBuilder.setOnCancelListener((DialogInterface dialog) -> {
+            if (onReserveCallback != null) {
+                onReserveCallback.call(LobbyReservationRowView.this);
             }
         });
 
@@ -222,6 +256,7 @@ public class LobbyReservationRowView extends FrameLayout implements
         if (modeSwitcher.indexOfChild(bookingMode) >= 0) {
             modeSwitcher.removeView(bookingMode);
         }
+        reserveButton.setEnabled(false);
         setBackgroundColor(getResources().getColor(R.color.Transparent));
     }
 
@@ -259,7 +294,14 @@ public class LobbyReservationRowView extends FrameLayout implements
         modeSwitcher.setDisplayedChild(modeSwitcher.indexOfChild(bookingMode));
         setBackgroundColor(getResources().getColor(R.color.ReserveBackground));
 
-
+        // Initial state for the "Reserve" button.
+        if (PreferenceManager.getInstance(getContext()).getAddressBookEnabled()) {
+            reserveButton.setEnabled(false);
+            hintText.setVisibility(View.GONE);
+        } else {
+            reserveButton.setEnabled(true);
+            hintText.setVisibility(View.VISIBLE);
+        }
     }
 
     public void resetTimeSpan() {
@@ -282,44 +324,54 @@ public class LobbyReservationRowView extends FrameLayout implements
         this.onReserveCallback = onReserveCallback;
     }
 
-    public void setOnCancellListener(OnCancellListener l) {
-        this.onCancellListener = l;
+    public void setOnCancelListener(OnCancelListener l) {
+        this.OnCancelListener = l;
     }
 
-    public interface OnCancellListener {
-        public void onCancel(LobbyReservationRowView view);
+    public interface OnCancelListener {
+        void onCancel(LobbyReservationRowView view);
     }
 
     public interface OnReserveListener {
-        public void call(LobbyReservationRowView v);
+        void call(LobbyReservationRowView v);
     }
 
     private class MakeReservationTask extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... arg0) {
-            AddressBookEntry entry = application.getAddressBook().getEntryByName(
-                    nameField.getText().toString());
             Boolean addressBookOption = PreferenceManager.getInstance(getContext()).getAddressBookEnabled();
+            String title = eventTitle.getText().toString();
+            String[] attendees = attendeesField.getText()
+                    .toString()
+                    .trim()
+                    .split("\\s*,\\s*");
+
+            // Set the first attendee to be the organisator of the event,
+            // this does not function at the moment because we are using the
+            // tablet email for booking an event
+            AddressBookEntry entry = application.getAddressBook().getEntryByName(attendees[0]);
+            List<AddressBookEntry> bookEntries = Stream.of(attendees)
+                    .filter(attendee -> application.getAddressBook().getEntryByName(attendee) != null)
+                    .map(attendee -> application.getAddressBook().getEntryByName(attendee))
+                    .collect(toList());
 
             if (entry == null && addressBookOption) {
                 reservatorError(new ReservatorException("No such user, try again"));
             }
             try {
                 if (entry != null) {
-                    application.getDataProxy().reserve(room, timePicker2.getTimeSpan(),
-                            entry.getName(), entry.getEmail());
+                    application.getDataProxy().reserve(room, timePicker2.getTimeSpan(), title, entry, bookEntries);
                 } else {
                     // Address book option is off so reserve the room with the selected account in settings.
                     String accountEmail = PreferenceManager.getInstance(getContext()).getDefaultUserName();
                     if (accountEmail.equals("")) {
                         reservatorError(new ReservatorException("No account for reservation stored. Check your settings."));
                     }
-                    String title = nameField.getText().toString();
                     if (title.equals("")) {
                         title = application.getString(R.string.defaultTitleForReservation);
                     }
                     application.getDataProxy().reserve(room, timePicker2.getTimeSpan(),
-                            title, accountEmail);
+                            title, entry, bookEntries);
                 }
             } catch (ReservatorException e) {
                 reservatorError(e);

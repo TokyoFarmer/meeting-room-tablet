@@ -12,6 +12,7 @@ import android.provider.CalendarContract;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.futurice.android.reservator.model.AddressBookEntry;
 import com.futurice.android.reservator.model.DataProxy;
 import com.futurice.android.reservator.model.DateTime;
 import com.futurice.android.reservator.model.Reservation;
@@ -24,6 +25,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
@@ -107,7 +109,7 @@ public class PlatformCalendarDataProxy extends DataProxy {
     }
 
     @Override
-    public void reserve(Room r, TimeSpan timeSpan, String owner, String ownerEmail) throws ReservatorException {
+    public void reserve(Room r, TimeSpan timeSpan, String title, AddressBookEntry owner, List<AddressBookEntry> attendees) throws ReservatorException {
         if (!(r instanceof PlatformCalendarRoom)) {
             throw new ReservatorException("Data type error (expecting PlatformCalendarRoom)");
         }
@@ -119,12 +121,12 @@ public class PlatformCalendarDataProxy extends DataProxy {
 
         ContentValues mNewValues = new ContentValues();
         mNewValues.put(CalendarContract.Events.CALENDAR_ID, room.getId());
-        mNewValues.put(CalendarContract.Events.ORGANIZER, ownerEmail);
+        mNewValues.put(CalendarContract.Events.ORGANIZER, owner.getEmail());
         mNewValues.put(CalendarContract.Events.DTSTART, timeSpan.getStart().getTimeInMillis());
         mNewValues.put(CalendarContract.Events.DTEND, timeSpan.getEnd().getTimeInMillis());
         mNewValues.put(CalendarContract.Events.EVENT_TIMEZONE, SYSTEM_TZ.getID());
         mNewValues.put(CalendarContract.Events.EVENT_LOCATION, room.getLocation());
-        mNewValues.put(CalendarContract.Events.TITLE, owner);
+        mNewValues.put(CalendarContract.Events.TITLE, title);
 
         Uri eventUri = resolver.insert(CalendarContract.Events.CONTENT_URI, mNewValues);
         if (eventUri == null) {
@@ -132,24 +134,27 @@ public class PlatformCalendarDataProxy extends DataProxy {
         }
 
         long eventId = Long.parseLong(eventUri.getLastPathSegment());
-        mNewValues = new ContentValues();
-        mNewValues.put(CalendarContract.Attendees.EVENT_ID, eventId);
-        mNewValues.put(CalendarContract.Attendees.ATTENDEE_NAME, owner);
-        mNewValues.put(CalendarContract.Attendees.ATTENDEE_EMAIL, ownerEmail);
-        mNewValues.put(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP, CalendarContract.Attendees.RELATIONSHIP_ORGANIZER);
-        mNewValues.put(CalendarContract.Attendees.ATTENDEE_TYPE, CalendarContract.Attendees.TYPE_OPTIONAL);
-        mNewValues.put(CalendarContract.Attendees.ATTENDEE_STATUS, CalendarContract.Attendees.ATTENDEE_STATUS_NONE);
 
-        Uri attendeeUri = resolver.insert(CalendarContract.Attendees.CONTENT_URI, mNewValues);
-        if (attendeeUri == null) {
-            Log.w("reserve", "Could not add an attendeee");
+        for (AddressBookEntry attendee : attendees) {
+            mNewValues = new ContentValues();
+            mNewValues.put(CalendarContract.Attendees.EVENT_ID, eventId);
+            mNewValues.put(CalendarContract.Attendees.ATTENDEE_NAME, attendee.getName());
+            mNewValues.put(CalendarContract.Attendees.ATTENDEE_EMAIL, attendee.getEmail());
+            mNewValues.put(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP, CalendarContract.Attendees.RELATIONSHIP_ORGANIZER);
+            mNewValues.put(CalendarContract.Attendees.ATTENDEE_TYPE, CalendarContract.Attendees.TYPE_OPTIONAL);
+            mNewValues.put(CalendarContract.Attendees.ATTENDEE_STATUS, CalendarContract.Attendees.ATTENDEE_STATUS_NONE);
+
+            Uri attendeeUri = resolver.insert(CalendarContract.Attendees.CONTENT_URI, mNewValues);
+            if (attendeeUri == null) {
+                Log.w("reserve", "Could not add an attendeee");
+            }
         }
 
         syncGoogleCalendarAccount(accountName);
 
         Reservation createdReservation = new Reservation(
             Long.toString(eventId) + "-" + Long.toString(timeSpan.getStart().getTimeInMillis()),
-            owner,
+            owner.getName(),
             timeSpan);
         createdReservation.setIsCancellable(true);
         putToLocalCache(room, createdReservation);

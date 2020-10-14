@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
@@ -17,7 +18,7 @@ public abstract class DataProxy {
 
     public abstract void setServer(String server);
 
-    abstract public void reserve(Room room, TimeSpan timeSpan, String owner, String ownerEmail) throws ReservatorException;
+    abstract public void reserve(Room room, TimeSpan timeSpan, String title, AddressBookEntry owner, List<AddressBookEntry> attendees) throws ReservatorException;
 
     /**
      * Synchronously get a list of rooms this proxy is aware of. Listeners are not notified when done.
@@ -44,7 +45,7 @@ public abstract class DataProxy {
     /**
      * Synchronously gets a room with its name. Listeners are not notified when done.
      *
-     * @param roomName. The room name to look for
+     * @param roomName The room name to look for
      * @return the room matching roomName or null
      * @throws ReservatorException
      */

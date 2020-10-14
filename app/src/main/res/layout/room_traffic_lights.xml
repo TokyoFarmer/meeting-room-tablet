@@ -57,6 +57,17 @@
             android:textIsSelectable="false"
             android:textSize="30sp" />
 
+        <Button
+            android:id="@+id/bookNow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/reservationInfo"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="30dp"
+            android:text="@string/bookNow"
+            android:textIsSelectable="false"
+            android:textSize="40sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/disconnected"

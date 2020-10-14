@@ -3,7 +3,7 @@ package com.futurice.android.reservator.view;
 import com.futurice.android.reservator.R;
 import com.futurice.android.reservator.model.Room;
 import com.futurice.android.reservator.model.TimeSpan;
-import com.futurice.android.reservator.view.LobbyReservationRowView.OnCancellListener;
+import com.futurice.android.reservator.view.LobbyReservationRowView.OnCancelListener;
 import com.futurice.android.reservator.view.LobbyReservationRowView.OnReserveListener;
 
 import android.app.Dialog;
@@ -27,12 +27,9 @@ public class RoomReservationPopup extends Dialog {
         setContentView(R.layout.reservation_popup);
         ButterKnife.bind(this);
 
-        popupContainer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cancel();
-            }
-        });
+        popupContainer.setOnClickListener(
+                (View v) -> cancel()
+        );
         reservationView.setAnimationDuration(0);
         reservationView.setClickable(true);
         reservationView.setRoom(room);
@@ -42,18 +39,12 @@ public class RoomReservationPopup extends Dialog {
         reservationView.timePicker2.setStartTime(presetTime.getStart());
         reservationView.timePicker2.setEndTime(presetTime.getEnd());
         reservationView.setEndTimeRelatively(60);
-        reservationView.setOnCancellListener(new OnCancellListener() {
-            @Override
-            public void onCancel(LobbyReservationRowView view) {
-                cancel();
-            }
-        });
-        reservationView.setOnReserveCallback(new OnReserveListener() {
-            @Override
-            public void call(LobbyReservationRowView v) {
-                cancel();
-            }
-        });
+        reservationView.setOnCancelListener(
+                (LobbyReservationRowView view) -> cancel()
+        );
+        reservationView.setOnReserveCallback(
+                (LobbyReservationRowView view) -> cancel()
+        );
         reservationView.setReserveMode();
     }
 

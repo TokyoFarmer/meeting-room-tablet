@@ -37,6 +37,7 @@ public class RoomTrafficLights extends RelativeLayout {
     final int QUICK_BOOK_THRESHOLD = 5; // minutes
     // Show "disconnected" warning icon on screen when disconnected for more than 5 minutes
     private final long DISCONNECTED_WARNING_ICON_THRESHOLD = 5 * 60 * 1000;
+    View.OnClickListener bookNowListener;
     boolean enabled = true;
     private long lastTouched = 0;
     Timer touchTimeoutTimer;
@@ -47,6 +48,8 @@ public class RoomTrafficLights extends RelativeLayout {
     TextView roomStatusView;
     @BindView(R.id.roomStatusInfo)
     TextView roomStatusInfoView;
+    @BindView(R.id.bookNow)
+    Button bookNowButton;
     @BindView(R.id.reservationInfo)
     TextView reservationInfoView;
     @BindView(R.id.disconnected)
@@ -70,6 +73,16 @@ public class RoomTrafficLights extends RelativeLayout {
         setClickable(true);
         setVisibility(INVISIBLE);
 
+        bookNowButton.setOnClickListener((View v) -> {
+            if (bookNowListener != null && bookNowButton.getVisibility() == VISIBLE) {
+                bookNowListener.onClick(v);
+            }
+        });
+
+    }
+
+    public void setBookNowListener(View.OnClickListener l) {
+        this.bookNowListener = l;
     }
 
     public void update(Room room) {
@@ -83,21 +96,29 @@ public class RoomTrafficLights extends RelativeLayout {
                 roomStatusInfoView.setText(getResources().getString(R.string.free_for_the_day));
                 this.setBackgroundColor(getResources().getColor(R.color.TrafficLightFree));
                 // Must use deprecated API for some reason or it crashes on older tablets
+                bookNowButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.traffic_lights_button_green));
+                bookNowButton.setTextColor(getResources().getColorStateList(R.color.traffic_lights_button_green));
             } else {
                 int freeMinutes = room.minutesFreeFromNow();
                 roomStatusView.setText(R.string.status_free);
                 roomStatusInfoView.setText(getContext().getString(R.string.free_for_specific_amount, Helpers.humanizeTimeSpan2(freeMinutes)));
                 if (freeMinutes >= Room.RESERVED_THRESHOLD_MINUTES) {
                     this.setBackgroundColor(getResources().getColor(R.color.TrafficLightFree));
+                    bookNowButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.traffic_lights_button_green));
+                    bookNowButton.setTextColor(getResources().getColorStateList(R.color.traffic_lights_button_green));
                 } else {
                     this.setBackgroundColor(getResources().getColor(R.color.TrafficLightYellow));
+                    bookNowButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.traffic_lights_button_yellow));
+                    bookNowButton.setTextColor(getResources().getColorStateList(R.color.traffic_lights_button_yellow));
                 }
             }
             reservationInfoView.setVisibility(GONE);
             roomStatusInfoView.setVisibility(VISIBLE);
+            bookNowButton.setVisibility(VISIBLE);
         } else {
             this.setBackgroundColor(getResources().getColor(R.color.TrafficLightReserved));
             roomStatusView.setText(R.string.status_reserved);
+            bookNowButton.setVisibility(GONE);
             setReservationInfo(room.getCurrentReservation(), room.getNextFreeSlot());
         }
     }
@@ -183,11 +204,7 @@ public class RoomTrafficLights extends RelativeLayout {
                 public void run() {
                     if (RoomTrafficLights.this.enabled &&
                             new Date().getTime() >= RoomTrafficLights.this.lastTouched + TOUCH_TIMEOUT) {
-                        RoomTrafficLights.this.post(new Runnable() {
-                            public void run() {
-                                RoomTrafficLights.this.setVisibility(VISIBLE);
-                            }
-                        });
+                        RoomTrafficLights.this.post(() -> RoomTrafficLights.this.setVisibility(VISIBLE));
                         descheduleTimer();
                     }
                 }

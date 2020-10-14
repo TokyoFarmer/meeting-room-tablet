@@ -186,18 +186,18 @@ public class LobbyActivity extends ReservatorActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         refreshMenu = menu.add("Refresh").setOnMenuItemClickListener(this);
         refreshMenu.setIcon(android.R.drawable.ic_popup_sync);
-//        settingsMenu = menu.add("Settings").setOnMenuItemClickListener(this);
-//        settingsMenu.setIcon(android.R.drawable.ic_menu_preferences);
+        settingsMenu = menu.add("Settings").setOnMenuItemClickListener(this);
+        settingsMenu.setIcon(android.R.drawable.ic_menu_preferences);
         aboutMenu = menu.add("About").setOnMenuItemClickListener(this);
         return true;
     }
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
-//        if (item == settingsMenu) {
-//            Intent i = new Intent(this, SettingsActivity.class);
-//            startActivity(i);
-//        } else
+        if (item == settingsMenu) {
+            Intent i = new Intent(this, SettingsActivity.class);
+            startActivity(i);
+        } else
         if (item == refreshMenu) {
             refreshRoomInfo();
             refetchAddressBook();
@@ -287,12 +287,9 @@ public class LobbyActivity extends ReservatorActivity
         }
 
         v.setRoom(r);
-        v.setOnReserveCallback(new OnReserveListener() {
-            @Override
-            public void call(LobbyReservationRowView v) {
-                refreshRoomInfo();
-            }
-        });
+        v.setOnReserveCallback(
+                (LobbyReservationRowView view) -> refreshRoomInfo()
+        );
 
         // This is ugly, adding views in order.
         Comparator<Room> roomCmp = new RoomNameComparator();

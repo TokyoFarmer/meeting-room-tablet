@@ -1,5 +1,6 @@
 package com.futurice.android.reservator.model;
 
+import java.util.List;
 import java.util.Vector;
 
 import android.util.Log;
@@ -44,10 +45,10 @@ public class CachedDataProxy extends DataProxy {
     }
 
     @Override
-    public void reserve(Room room, TimeSpan timeSpan, String owner, String ownerEmail)
+    public void reserve(Room room, TimeSpan timeSpan, String title, AddressBookEntry owner, List<AddressBookEntry> attendees)
         throws ReservatorException {
         reservationCache.remove(room.getEmail());
-        dataProxy.reserve(room, timeSpan, owner, ownerEmail);
+        dataProxy.reserve(room, timeSpan, title, owner, attendees);
     }
 
     @Override

@@ -147,8 +147,4 @@ public class ReservatorActivity extends Activity {
             return (status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL);
         }
     }
-
-    public ReservatorActivity getReservatorActivity() {
-        return this;
-    }
 }
